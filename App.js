@@ -1,20 +1,54 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
+import * as Location from 'expo-location';
+import React, { useState, useEffect } from 'react';
+import MapView from 'react-native-maps';
 
 export default function App() {
+  const [location, setLocation] = useState({
+    latitude: 65.0800,
+    longitude: 25.4800,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421
+  });
+
+  const getUserPosition = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+
+    try {
+      if (status !== 'granted') {
+        console.log('Geolocation failed');
+        return;
+      }
+
+      const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      setLocation({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      await getUserPosition();
+    })();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <MapView
+      style={styles.map}
+      region={location}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  map: {
+    flex: 1
+  }
 });
+
